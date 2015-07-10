@@ -1,0 +1,47 @@
+首先自己搭一个ros环境 配package.xml和CMakeFile.txt就不用多说了
+
+ros_creat_pkg 一个package 在src里将rtai_cpp编译 这次用的是one shot mode  不用担心挂掉
+
+单独运行sudo下可以。
+
+利用rosrun 可以自动补全找到，并运行。但是没有权限所以会提示无法创建task。
+
+尝试将rosrun移植到su下，发现在工作环境中的setup.bash中用的是当前路径，导致无法读出在个人用户帐号下的ros文件，超级蛋疼，求统一解决方案。
+
+CC=g++
+NAME=rtai_cpp
+CFLAGS= -I/usr/realtime/include -D__IN_RTAI__  -o
+DFLAGS= -L/usr/realtime/lib -llxrt -lpthread
+TARGET=$(NAME)
+SOURCE=$(NAME).cpp
+all:
+	$(CC) $(SOURCE) $(CFLAGS) $(TARGET) $(DFLAGS)
+clean:
+	rm $(TARGET)
+	
+
+#include <iostream>
+#include <cstdlib>
+#include <rtai_lxrt.h>
+#include "rtai.h"
+#include "rtai_sched.h"
+#include <rtai_sem.h>
+using namespace std;
+void print_function(){
+	cout<<"Hello World!"<<endl;
+	return;
+}
+int main(){
+	RT_TASK *retval=0;
+	rt_set_oneshot_mode();
+	start_rt_timer(1);
+	retval=rt_task_init(100,0,1024,1024);
+	if(!retval){
+                cout <<"Can't initial the task" <<endl;
+                exit(1);
+        }
+	print_function();
+	rt_task_resume(retval);
+	print_function();
+	return 0;
+}
