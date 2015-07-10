@@ -45,3 +45,5 @@ int main(){
 	print_function();
 	return 0;
 }
+
+额，忘了说了  运行前要按顺序insmod rtai的组件.....
